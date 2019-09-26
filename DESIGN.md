@@ -6,7 +6,7 @@ Google and Apple offer wonderful services which allow people to share and store 
 
 Where we go, what we see, what we buy, who we're with... we are the commodity.
 
-Unfortunately, even for the technically inclined, it's not easy to break out of their grasp.
+Even for the technically inclined, it's not easy to break out of their grasp.
 
 ## Problem Space & Scope
 
@@ -18,7 +18,7 @@ The goal of *Iridium* is to provide a self-hosted platform that enables users to
 * Provide a way for end users to quickly deploy this software to infrastructure of their choosing
 * Provide a location to store all of your photos/videos
 * Provide a way to move all of your media from Google/Apple into Iridium
-* Provide IAM
+* Provide user management
 * Provide an IOS and Android app (IRONY\*) that allows you to automatically upload photos you've taken to your *Iridium* installation
 
 \* Can't win 'em all.
