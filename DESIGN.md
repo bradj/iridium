@@ -56,10 +56,9 @@ An Iridium deployment will have 4 things active:
 
 Media storage will be handled, for now, by S3.
 
-### Data Flow
+### [Data Flow](https://raw.githubusercontent.com/bradj/iridium/design/doc-updates/assets/flow.svg?sanitize=true)
 
-![Data flow][https://raw.githubusercontent.com/bradj/iridium/design/doc-updates/assets/flow.svg?sanitize=true]
-
+TODO
 
 ### Service Container(s)
 
