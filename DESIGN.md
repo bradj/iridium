@@ -58,7 +58,7 @@ Media storage will be handled, for now, by S3.
 
 ### Data Flow
 
-![Data flow][./assets/flow.svg]
+![Data flow][https://raw.githubusercontent.com/bradj/iridium/design/doc-updates/assets/flow.svg]
 
 
 ### Service Container(s)
