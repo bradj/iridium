@@ -58,7 +58,7 @@ Media storage will be handled, for now, by S3.
 
 ### Data Flow
 
-![Data flow][assets/flow.svg]
+![Data flow][./assets/flow.svg]
 
 
 ### Service Container(s)
