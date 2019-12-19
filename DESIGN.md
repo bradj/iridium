@@ -38,7 +38,7 @@ A user from the proverbial end-user group should be able to start using the new 
 ## System Technical Design
 
 * Terraform for infra
-* Python for backend services and API
+* Golang for services
 * JavaScript for UI
 * nginx to serve the UI
 * Postgres
@@ -47,4 +47,19 @@ A user from the proverbial end-user group should be able to start using the new 
 
 ### Overview
 
-This application will live on one or two machines. If the instance count is greater than 1 then a load balancer is required.
+An Iridium deployment will have 4 things active:
+
+1. Service container(s) running the Golang services
+1. Nginx container to serve the UI
+1. Redis container to handle temp storage (ie: auth tokens)
+1. Postgres container/RDS
+
+Media storage will be handled, for now, by S3.
+
+### [Data Flow](https://raw.githubusercontent.com/bradj/iridium/design/doc-updates/assets/flow.svg?sanitize=true)
+
+TODO
+
+### Service Container(s)
+
+TODO
