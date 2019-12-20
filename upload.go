@@ -26,5 +26,9 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Copy the file to the destination path
-	io.Copy(f, file)
+	_, err = io.Copy(f, file)
+
+	if err != nil {
+		panic(err)
+	}
 }
