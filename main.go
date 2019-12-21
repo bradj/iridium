@@ -1,4 +1,3 @@
-// basic-middleware.go
 package main
 
 import (
@@ -9,6 +8,8 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 )
+
+const configLocation string = "config.toml"
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("templates/index.html")
@@ -22,6 +23,8 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	// c, err := NewConfig(configLocation)
+
 	r := chi.NewRouter()
 
 	r.Use(middleware.Logger)
@@ -31,5 +34,6 @@ func main() {
 	r.Get("/login", loginHandler)
 	r.Get("/logout", logoutHandler)
 	r.Post("/upload", uploadHandler)
+
 	http.ListenAndServe(":3000", r)
 }

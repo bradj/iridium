@@ -2,3 +2,4 @@
 .vscode
 iridium
 *.blob
+config.toml
