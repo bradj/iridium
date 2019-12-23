@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 
+	"github.com/bradj/iridium/routes"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 )
@@ -23,7 +25,8 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	// c, err := NewConfig(configLocation)
+	//c, err := NewConfig(configLocation)
+	port := 3000
 
 	r := chi.NewRouter()
 
@@ -31,9 +34,11 @@ func main() {
 	r.Use(middleware.Recoverer)
 
 	r.Get("/", homeHandler)
-	r.Get("/login", loginHandler)
-	r.Get("/logout", logoutHandler)
-	r.Post("/upload", uploadHandler)
 
-	http.ListenAndServe(":3000", r)
+	r.Group(routes.Protected)
+	r.Group(routes.Public)
+
+	log.Printf("Listening on %d", port)
+
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), r))
 }

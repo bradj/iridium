@@ -1,4 +1,4 @@
-package main
+package routes
 
 import (
 	"io"
@@ -6,7 +6,8 @@ import (
 	"os"
 )
 
-func uploadHandler(w http.ResponseWriter, r *http.Request) {
+// UploadHandler handles user uploads
+func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	// ParseMultipartForm parses a request body as multipart/form-data
 	r.ParseMultipartForm(32 << 20)
 
