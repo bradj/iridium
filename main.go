@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 
+	"github.com/bradj/iridium/config"
+	"github.com/bradj/iridium/persistence"
 	"github.com/bradj/iridium/routes"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
@@ -13,32 +15,44 @@ import (
 
 const configLocation string = "config.toml"
 
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("templates/index.html")
+func main() {
+	c, err := config.NewConfig(configLocation)
 
 	if err != nil {
-		fmt.Fprintln(w, "home")
+		log.Fatal(err)
 		return
 	}
 
-	tmpl.Execute(w, nil)
-}
+	log.Printf("Loaded config from %s", configLocation)
 
-func main() {
-	//c, err := NewConfig(configLocation)
-	port := 3000
+	db, err := persistence.NewDB(c)
+
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	defer db.Close()
 
 	r := chi.NewRouter()
 
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.Use(middleware.RequestID)
 
-	r.Get("/", homeHandler)
+	// Places Config & DB into context()
+	r.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := context.WithValue(r.Context(), routes.ConfigKey, c)
+			ctx = context.WithValue(ctx, routes.DBKey, db)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	})
 
 	r.Group(routes.Protected)
 	r.Group(routes.Public)
 
-	log.Printf("Listening on %d", port)
+	log.Printf("Listening on %d", c.Port)
 
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), r))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", c.Port), r))
 }
