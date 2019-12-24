@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"github.com/BurntSushi/toml"
@@ -6,11 +6,13 @@ import (
 
 // TomlConfig struct
 type TomlConfig struct {
-	DB DB `toml:"database"`
+	DB   DB  `toml:"database"`
+	Port int `toml:"port"`
 }
 
 // DB struct
 type DB struct {
+	Database string `toml:"database"`
 	Username string `toml:"username"`
 	Password string `toml:"password"`
 	Host     string `toml:"host"`

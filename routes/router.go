@@ -11,7 +11,7 @@ var (
 	tokenAuth *jwtauth.JWTAuth
 )
 
-func init()  {
+func init() {
 	tokenAuth = jwtauth.New("HS256", []byte("secret"), nil)
 
 	// For debugging/example purposes, we generate and print
@@ -20,7 +20,8 @@ func init()  {
 	fmt.Printf("DEBUG: a sample jwt is %s\n\n", tokenString)
 }
 
-func Protected(r chi.Router)  {
+// Protected renders all routes requiring auth
+func Protected(r chi.Router) {
 	// Seek, verify and validate JWT tokens
 	r.Use(jwtauth.Verifier(tokenAuth))
 	r.Use(jwtauth.Authenticator)
@@ -29,7 +30,9 @@ func Protected(r chi.Router)  {
 	r.Group(AdminHandler)
 }
 
-func Public(r chi.Router)  {
+// Public renders all public routes
+func Public(r chi.Router) {
+	r.Get("/", HomeHandler)
 	r.Get("/login", LoginHandler)
 	r.Get("/logout", LogoutHandler)
 }
