@@ -13,18 +13,18 @@ import (
 func (h HTTP) uploadMount() http.Handler {
 	r := chi.NewRouter()
 
-	r.Get("/", uploadGet)
-	r.Post("/", uploadPost)
+	r.Get("/", h.uploadGet)
+	r.Post("/", h.uploadPost)
 
 	return r
 }
 
-func uploadGet(w http.ResponseWriter, r *http.Request) {
+func (h HTTP) uploadGet(w http.ResponseWriter, r *http.Request) {
 	log.Println("upload request")
 	fmt.Fprintln(w, "upload")
 }
 
-func uploadPost(w http.ResponseWriter, r *http.Request) {
+func (h HTTP) uploadPost(w http.ResponseWriter, r *http.Request) {
 	// ParseMultipartForm parses a request body as multipart/form-data
 	r.ParseMultipartForm(32 << 20)
 
