@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func (h HTTP) adminHandler() http.Handler {
+func (h HTTP) adminMount() http.Handler {
 	r := chi.NewRouter()
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
