@@ -36,7 +36,7 @@ func protected(r chi.Router) {
 	r.Use(jwtauth.Authenticator)
 
 	r.Post("/upload", h.uploadHandler)
-	r.Group(h.AdminHandler)
+	r.Mount("/admin", h.adminHandler())
 }
 
 // Public renders all public routes
