@@ -7,7 +7,7 @@ import (
 )
 
 // LogoutHandler handles user logout
-func LogoutHandler(w http.ResponseWriter, r *http.Request) {
+func (h HTTP) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Logout request")
 	fmt.Fprintln(w, "logout")
 }

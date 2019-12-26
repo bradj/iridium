@@ -9,6 +9,7 @@ import (
 
 var (
 	tokenAuth *jwtauth.JWTAuth
+	h         HTTP
 )
 
 func init() {
@@ -20,19 +21,27 @@ func init() {
 	fmt.Printf("DEBUG: a sample jwt is %s\n\n", tokenString)
 }
 
+// NewRoutes creates all the routes
+func NewRoutes(r chi.Router, a App) {
+	h = HTTP{App: a}
+
+	r.Group(protected)
+	r.Group(public)
+}
+
 // Protected renders all routes requiring auth
-func Protected(r chi.Router) {
+func protected(r chi.Router) {
 	// Seek, verify and validate JWT tokens
 	r.Use(jwtauth.Verifier(tokenAuth))
 	r.Use(jwtauth.Authenticator)
 
-	r.Post("/upload", UploadHandler)
-	r.Group(AdminHandler)
+	r.Post("/upload", h.uploadHandler)
+	r.Group(h.AdminHandler)
 }
 
 // Public renders all public routes
-func Public(r chi.Router) {
-	r.Get("/", HomeHandler)
-	r.Get("/login", LoginHandler)
-	r.Get("/logout", LogoutHandler)
+func public(r chi.Router) {
+	r.Get("/", h.homeHandler)
+	r.Get("/login", h.loginHandler)
+	r.Get("/logout", h.logoutHandler)
 }
