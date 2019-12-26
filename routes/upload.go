@@ -1,13 +1,30 @@
 package routes
 
 import (
+	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
+
+	"github.com/go-chi/chi"
 )
 
-// UploadHandler handles user uploads
-func (h HTTP) uploadHandler(w http.ResponseWriter, r *http.Request) {
+func (h HTTP) uploadMount() http.Handler {
+	r := chi.NewRouter()
+
+	r.Get("/", uploadGet)
+	r.Post("/", uploadPost)
+
+	return r
+}
+
+func uploadGet(w http.ResponseWriter, r *http.Request) {
+	log.Println("upload request")
+	fmt.Fprintln(w, "upload")
+}
+
+func uploadPost(w http.ResponseWriter, r *http.Request) {
 	// ParseMultipartForm parses a request body as multipart/form-data
 	r.ParseMultipartForm(32 << 20)
 

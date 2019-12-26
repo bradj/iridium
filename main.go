@@ -22,7 +22,7 @@ func main() {
 		return
 	}
 
-	log.Printf("Loaded config from %s", configLocation)
+	log.Printf("Loaded config from '%s'", configLocation)
 
 	db, err := persistence.NewDB(c)
 
@@ -46,7 +46,7 @@ func main() {
 
 	routes.NewRoutes(r, a)
 
-	log.Printf("Listening on %d", c.Port)
+	log.Printf("Listening on port %d", c.Port)
 
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", c.Port), r))
 }
