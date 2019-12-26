@@ -7,9 +7,15 @@ import (
 	"net/http"
 )
 
-func (h HTTP) AdminHandler(r chi.Router) {
-	r.Get("/admin", func(w http.ResponseWriter, r *http.Request) {
+func (h HTTP) adminHandler() http.Handler {
+	r := chi.NewRouter()
+
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		_, claims, _ := jwtauth.FromContext(r.Context())
 		w.Write([]byte(fmt.Sprintf("protected area. hi %v", claims["user_id"])))
 	})
+
+	// r.Use(AdminOnly)
+	// r.Get("/accounts", adminListAccounts)
+	return r
 }
