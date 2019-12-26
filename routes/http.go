@@ -1,8 +1,11 @@
 package routes
 
-import "database/sql"
+import (
+	"database/sql"
+	"log"
 
-import "github.com/bradj/iridium/config"
+	"github.com/bradj/iridium/config"
+)
 
 // App gets instantiated once at the beginning of the app and then
 // the other types are constructed with it. It is read-only and never changes
@@ -11,6 +14,7 @@ import "github.com/bradj/iridium/config"
 // must be safe for access by multiple goroutines.
 type App struct {
 	DB     *sql.DB
+	Logger *log.Logger
 	Config config.TomlConfig
 }
 
