@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -40,17 +39,12 @@ func main() {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.RequestID)
 
-	// Places Config & DB into context()
-	r.Use(func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx := context.WithValue(r.Context(), routes.ConfigKey, c)
-			ctx = context.WithValue(ctx, routes.DBKey, db)
-			next.ServeHTTP(w, r.WithContext(ctx))
-		})
-	})
+	a := routes.App{
+		DB:     db,
+		Config: c,
+	}
 
-	r.Group(routes.Protected)
-	r.Group(routes.Public)
+	routes.NewRoutes(r, a)
 
 	log.Printf("Listening on %d", c.Port)
 
