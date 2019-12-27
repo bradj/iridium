@@ -8,8 +8,14 @@ run:
 
 .PHONY: clean
 clean:
-	rm ${APP}
+	rm -f ${APP}
 
-.PHONY: start-db
-start-db:
+.PHONY: db-start
+db-start:
 	docker run -itd --rm -p 5432:5432 -e POSTGRES_USER="iridium" -e POSTGRES_PASSWORD="123456789" postgres
+	
+.PHONY: db-generate
+db-generate:
+	sqlboiler --wipe psql
+
+.SILENT:

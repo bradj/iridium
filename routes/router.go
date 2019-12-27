@@ -12,16 +12,21 @@ var (
 
 // NewRoutes creates all the routes
 func NewRoutes(r chi.Router, a App) {
-	h = HTTP{App: a}
+	h = HTTP{
+		App: a,
+		JWT: auth.NewJWT(),
+	}
 
-	r.Group(protected)
+	r.Mount("/user", h.userMount())
+
 	r.Group(public)
+	r.Group(protected)
 }
 
 // Protected renders all routes requiring auth
 func protected(r chi.Router) {
 	// Seek, verify and validate JWT tokens
-	r.Use(jwtauth.Verifier(auth.TokenAuth))
+	r.Use(jwtauth.Verifier(h.JWT.TokenAuth))
 	r.Use(jwtauth.Authenticator)
 
 	r.Mount("/upload", h.uploadMount())
@@ -31,6 +36,7 @@ func protected(r chi.Router) {
 // Public renders all public routes
 func public(r chi.Router) {
 	r.Get("/", h.homeHandler)
+	r.Get("/newuser", h.newUser)
 
 	r.Mount("/login", h.loginMount())
 	r.Mount("/logout", h.logoutMount())
