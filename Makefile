@@ -16,6 +16,6 @@ db-start:
 	
 .PHONY: db-generate
 db-generate:
-	sqlboiler --wipe psql
+	go generate
 
 .SILENT:

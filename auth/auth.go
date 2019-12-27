@@ -8,17 +8,16 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// JWT holds properties for our token auth
 type JWT struct {
 	TokenAuth *jwtauth.JWTAuth
 }
 
 // NewJWT creates a new Auth struct
 func NewJWT() JWT {
-	a := JWT{
+	return JWT{
 		TokenAuth: jwtauth.New("HS256", []byte("fj98jklsns,nv982nvjkfjdsf903290f3jslk;fj"), nil),
 	}
-
-	return a
 }
 
 // NewToken generates a new JWT

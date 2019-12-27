@@ -24,10 +24,12 @@ import (
 
 // User is an object representing the database table.
 type User struct {
+	UserID       int       `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Username     string    `boil:"username" json:"username" toml:"username" yaml:"username"`
 	Email        string    `boil:"email" json:"email" toml:"email" yaml:"email"`
 	PasswordHash []byte    `boil:"password_hash" json:"password_hash" toml:"password_hash" yaml:"password_hash"`
-	CreatedDate  null.Time `boil:"created_date" json:"created_date,omitempty" toml:"created_date" yaml:"created_date,omitempty"`
+	CreatedAt    null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
+	UpdatedAt    null.Time `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
 	Active       null.Bool `boil:"active" json:"active,omitempty" toml:"active" yaml:"active,omitempty"`
 
 	R *userR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -35,20 +37,40 @@ type User struct {
 }
 
 var UserColumns = struct {
+	UserID       string
 	Username     string
 	Email        string
 	PasswordHash string
-	CreatedDate  string
+	CreatedAt    string
+	UpdatedAt    string
 	Active       string
 }{
+	UserID:       "user_id",
 	Username:     "username",
 	Email:        "email",
 	PasswordHash: "password_hash",
-	CreatedDate:  "created_date",
+	CreatedAt:    "created_at",
+	UpdatedAt:    "updated_at",
 	Active:       "active",
 }
 
 // Generated where
+
+type whereHelperint struct{ field string }
+
+func (w whereHelperint) EQ(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelperint) NEQ(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
+func (w whereHelperint) LT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelperint) LTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w whereHelperint) GT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelperint) GTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+func (w whereHelperint) IN(slice []int) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
 
 type whereHelperstring struct{ field string }
 
@@ -122,16 +144,20 @@ func (w whereHelpernull_Bool) GTE(x null.Bool) qm.QueryMod {
 }
 
 var UserWhere = struct {
+	UserID       whereHelperint
 	Username     whereHelperstring
 	Email        whereHelperstring
 	PasswordHash whereHelper__byte
-	CreatedDate  whereHelpernull_Time
+	CreatedAt    whereHelpernull_Time
+	UpdatedAt    whereHelpernull_Time
 	Active       whereHelpernull_Bool
 }{
+	UserID:       whereHelperint{field: "\"user\".\"user_id\""},
 	Username:     whereHelperstring{field: "\"user\".\"username\""},
 	Email:        whereHelperstring{field: "\"user\".\"email\""},
 	PasswordHash: whereHelper__byte{field: "\"user\".\"password_hash\""},
-	CreatedDate:  whereHelpernull_Time{field: "\"user\".\"created_date\""},
+	CreatedAt:    whereHelpernull_Time{field: "\"user\".\"created_at\""},
+	UpdatedAt:    whereHelpernull_Time{field: "\"user\".\"updated_at\""},
 	Active:       whereHelpernull_Bool{field: "\"user\".\"active\""},
 }
 
@@ -152,10 +178,10 @@ func (*userR) NewStruct() *userR {
 type userL struct{}
 
 var (
-	userAllColumns            = []string{"username", "email", "password_hash", "created_date", "active"}
+	userAllColumns            = []string{"user_id", "username", "email", "password_hash", "created_at", "updated_at", "active"}
 	userColumnsWithoutDefault = []string{"username", "email", "password_hash"}
-	userColumnsWithDefault    = []string{"created_date", "active"}
-	userPrimaryKeyColumns     = []string{"username"}
+	userColumnsWithDefault    = []string{"user_id", "created_at", "updated_at", "active"}
+	userPrimaryKeyColumns     = []string{"user_id"}
 )
 
 type (
@@ -441,7 +467,7 @@ func Users(mods ...qm.QueryMod) userQuery {
 
 // FindUser retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindUser(ctx context.Context, exec boil.ContextExecutor, username string, selectCols ...string) (*User, error) {
+func FindUser(ctx context.Context, exec boil.ContextExecutor, userID int, selectCols ...string) (*User, error) {
 	userObj := &User{}
 
 	sel := "*"
@@ -449,10 +475,10 @@ func FindUser(ctx context.Context, exec boil.ContextExecutor, username string, s
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from \"user\" where \"username\"=$1", sel,
+		"select %s from \"user\" where \"user_id\"=$1", sel,
 	)
 
-	q := queries.Raw(query, username)
+	q := queries.Raw(query, userID)
 
 	err := q.Bind(ctx, exec, userObj)
 	if err != nil {
@@ -473,6 +499,16 @@ func (o *User) Insert(ctx context.Context, exec boil.ContextExecutor, columns bo
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if queries.MustTime(o.CreatedAt).IsZero() {
+			queries.SetScanner(&o.CreatedAt, currTime)
+		}
+		if queries.MustTime(o.UpdatedAt).IsZero() {
+			queries.SetScanner(&o.UpdatedAt, currTime)
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -548,6 +584,12 @@ func (o *User) Insert(ctx context.Context, exec boil.ContextExecutor, columns bo
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *User) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		queries.SetScanner(&o.UpdatedAt, currTime)
+	}
+
 	var err error
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
@@ -678,6 +720,14 @@ func (o *User) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnCo
 	if o == nil {
 		return errors.New("models: no user provided for upsert")
 	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if queries.MustTime(o.CreatedAt).IsZero() {
+			queries.SetScanner(&o.CreatedAt, currTime)
+		}
+		queries.SetScanner(&o.UpdatedAt, currTime)
+	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {
 		return err
@@ -799,7 +849,7 @@ func (o *User) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, er
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), userPrimaryKeyMapping)
-	sql := "DELETE FROM \"user\" WHERE \"username\"=$1"
+	sql := "DELETE FROM \"user\" WHERE \"user_id\"=$1"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -896,7 +946,7 @@ func (o UserSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (in
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *User) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindUser(ctx, exec, o.Username)
+	ret, err := FindUser(ctx, exec, o.UserID)
 	if err != nil {
 		return err
 	}
@@ -935,16 +985,16 @@ func (o *UserSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) er
 }
 
 // UserExists checks if the User row exists.
-func UserExists(ctx context.Context, exec boil.ContextExecutor, username string) (bool, error) {
+func UserExists(ctx context.Context, exec boil.ContextExecutor, userID int) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from \"user\" where \"username\"=$1 limit 1)"
+	sql := "select exists(select 1 from \"user\" where \"user_id\"=$1 limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, username)
+		fmt.Fprintln(writer, userID)
 	}
-	row := exec.QueryRowContext(ctx, sql, username)
+	row := exec.QueryRowContext(ctx, sql, userID)
 
 	err := row.Scan(&exists)
 	if err != nil {

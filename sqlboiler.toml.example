@@ -5,4 +5,3 @@
   user   = "dbusername"
   pass   = "dbpassword"
   schema = "myschema"
-  blacklist = ["migrations", "other"]

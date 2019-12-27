@@ -10,12 +10,16 @@ import (
 func (h HTTP) adminMount() http.Handler {
 	r := chi.NewRouter()
 
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		_, claims, _ := jwtauth.FromContext(r.Context())
-		w.Write([]byte(fmt.Sprintf("protected area. hi %v", claims["user_id"])))
-	})
+	r.Get("/", Helper.Wrap(h.adminGet))
 
 	// r.Use(AdminOnly)
 	// r.Get("/accounts", adminListAccounts)
 	return r
+}
+
+func (h HTTP) adminGet(w http.ResponseWriter, r *http.Request) error {
+	_, claims, _ := jwtauth.FromContext(r.Context())
+	w.Write([]byte(fmt.Sprintf("protected area. hi %v", claims["user_id"])))
+
+	return nil
 }

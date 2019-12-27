@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -25,45 +26,45 @@ func protectedUser(r chi.Router) {
 	r.Use(jwtauth.Verifier(h.JWT.TokenAuth))
 	r.Use(jwtauth.Authenticator)
 
-	r.Get("/", h.userGet)
+	r.Get("/", Helper.Wrap(h.userGet))
 }
 
 func publicUser(r chi.Router) {
-	r.Post("/", h.userPost)
+	r.Post("/", Helper.Wrap(h.userPost))
 }
 
-func (h HTTP) newUser(w http.ResponseWriter, r *http.Request) {
+func (h HTTP) newUser(w http.ResponseWriter, r *http.Request) error {
 	tmpl, err := template.ParseFiles("templates/new_user.html")
 
 	if err != nil {
-		fmt.Fprintln(w, "new user")
-		return
+		return err
 	}
 
 	tmpl.Execute(w, nil)
+
+	return nil
 }
 
-func (h HTTP) userGet(w http.ResponseWriter, r *http.Request) {
+func (h HTTP) userGet(w http.ResponseWriter, r *http.Request) error {
 	fmt.Fprintln(w, "user get")
+
+	return nil
 }
 
-func (h HTTP) userPost(w http.ResponseWriter, r *http.Request) {
+func (h HTTP) userPost(w http.ResponseWriter, r *http.Request) error {
 	username := r.FormValue("username")
 	email := r.FormValue("email")
 	password := r.FormValue("password")
 	passwordConfirm := r.FormValue("password_confirm")
 
 	if password != passwordConfirm {
-		fmt.Fprintln(w, "passwords do not match")
-		return
+		return errors.New("passwords do not match")
 	}
 
 	hash, err := auth.GeneratePasswordHash(password)
 
 	if err != nil {
-		fmt.Fprintln(w, "error hashing password")
-		h.App.Logger.Println(err)
-		return
+		return err
 	}
 
 	var user models.User
@@ -75,7 +76,8 @@ func (h HTTP) userPost(w http.ResponseWriter, r *http.Request) {
 	err = user.Insert(r.Context(), h.DB, boil.Infer())
 
 	if err != nil {
-		fmt.Fprintln(w, "error inserting user")
-		h.App.Logger.Println(err)
+		return err
 	}
+
+	return nil
 }

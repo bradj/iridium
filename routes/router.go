@@ -8,6 +8,8 @@ import (
 
 var (
 	h HTTP
+	// Helper is a utililty variable that provides helpful methods for routing
+	Helper ErrorHandler
 )
 
 // NewRoutes creates all the routes
@@ -16,6 +18,8 @@ func NewRoutes(r chi.Router, a App) {
 		App: a,
 		JWT: auth.NewJWT(),
 	}
+
+	Helper = ErrorHandler{Logger: h.Logger}
 
 	r.Mount("/user", h.userMount())
 
@@ -35,8 +39,8 @@ func protected(r chi.Router) {
 
 // Public renders all public routes
 func public(r chi.Router) {
-	r.Get("/", h.homeHandler)
-	r.Get("/newuser", h.newUser)
+	r.Get("/", Helper.Wrap(h.homeHandler))
+	r.Get("/newuser", Helper.Wrap(h.newUser))
 
 	r.Mount("/login", h.loginMount())
 	r.Mount("/logout", h.logoutMount())
