@@ -14,7 +14,7 @@ var db *sql.DB
 func NewDB(c config.TomlConfig) (*sql.DB, error) {
 	var err error
 
-	connStr := fmt.Sprintf("user='%s' dbname='%s' sslmode=verify-full password='%s'", c.DB.Username, c.DB.Database, c.DB.Password)
+	connStr := fmt.Sprintf("user='%s' dbname='%s' sslmode=disable password='%s'", c.DB.Username, c.DB.Database, c.DB.Password)
 
 	if db, err = sql.Open("postgres", connStr); err != nil {
 		log.Fatal(err)
