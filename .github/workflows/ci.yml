@@ -10,5 +10,5 @@ jobs:
     steps:
       - uses: actions/checkout@master
 
-      - name: run
+      - name: Build and Test
         uses: cedrickring/golang-action@1.4.1
