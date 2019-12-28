@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 
+	"github.com/bradj/iridium/auth"
 	"github.com/bradj/iridium/config"
 )
 
@@ -23,6 +24,7 @@ type App struct {
 // or whatever. This makes testing very separate.
 type HTTP struct {
 	App // embeds app for easy access
+	JWT auth.JWT
 
 	// Users controllers.Users
 }

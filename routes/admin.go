@@ -2,20 +2,15 @@ package routes
 
 import (
 	"fmt"
-	"github.com/go-chi/chi"
-	"github.com/go-chi/jwtauth"
 	"net/http"
+
+	"github.com/go-chi/jwtauth"
 )
 
-func (h HTTP) adminMount() http.Handler {
-	r := chi.NewRouter()
+func (h HTTP) adminGet(w http.ResponseWriter, r *http.Request) error {
+	_, claims, _ := jwtauth.FromContext(r.Context())
 
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		_, claims, _ := jwtauth.FromContext(r.Context())
-		w.Write([]byte(fmt.Sprintf("protected area. hi %v", claims["user_id"])))
-	})
+	fmt.Fprintf(w, "protected area. hi %v", claims["user_id"])
 
-	// r.Use(AdminOnly)
-	// r.Get("/accounts", adminListAccounts)
-	return r
+	return nil
 }
