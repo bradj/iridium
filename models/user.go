@@ -24,7 +24,7 @@ import (
 
 // User is an object representing the database table.
 type User struct {
-	UserID       int       `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	ID           int       `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Username     string    `boil:"username" json:"username" toml:"username" yaml:"username"`
 	Email        string    `boil:"email" json:"email" toml:"email" yaml:"email"`
 	PasswordHash []byte    `boil:"password_hash" json:"password_hash" toml:"password_hash" yaml:"password_hash"`
@@ -37,7 +37,7 @@ type User struct {
 }
 
 var UserColumns = struct {
-	UserID       string
+	ID           string
 	Username     string
 	Email        string
 	PasswordHash string
@@ -45,7 +45,7 @@ var UserColumns = struct {
 	UpdatedAt    string
 	Active       string
 }{
-	UserID:       "user_id",
+	ID:           "id",
 	Username:     "username",
 	Email:        "email",
 	PasswordHash: "password_hash",
@@ -144,7 +144,7 @@ func (w whereHelpernull_Bool) GTE(x null.Bool) qm.QueryMod {
 }
 
 var UserWhere = struct {
-	UserID       whereHelperint
+	ID           whereHelperint
 	Username     whereHelperstring
 	Email        whereHelperstring
 	PasswordHash whereHelper__byte
@@ -152,7 +152,7 @@ var UserWhere = struct {
 	UpdatedAt    whereHelpernull_Time
 	Active       whereHelpernull_Bool
 }{
-	UserID:       whereHelperint{field: "\"user\".\"user_id\""},
+	ID:           whereHelperint{field: "\"user\".\"id\""},
 	Username:     whereHelperstring{field: "\"user\".\"username\""},
 	Email:        whereHelperstring{field: "\"user\".\"email\""},
 	PasswordHash: whereHelper__byte{field: "\"user\".\"password_hash\""},
@@ -178,10 +178,10 @@ func (*userR) NewStruct() *userR {
 type userL struct{}
 
 var (
-	userAllColumns            = []string{"user_id", "username", "email", "password_hash", "created_at", "updated_at", "active"}
+	userAllColumns            = []string{"id", "username", "email", "password_hash", "created_at", "updated_at", "active"}
 	userColumnsWithoutDefault = []string{"username", "email", "password_hash"}
-	userColumnsWithDefault    = []string{"user_id", "created_at", "updated_at", "active"}
-	userPrimaryKeyColumns     = []string{"user_id"}
+	userColumnsWithDefault    = []string{"id", "created_at", "updated_at", "active"}
+	userPrimaryKeyColumns     = []string{"id"}
 )
 
 type (
@@ -467,7 +467,7 @@ func Users(mods ...qm.QueryMod) userQuery {
 
 // FindUser retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindUser(ctx context.Context, exec boil.ContextExecutor, userID int, selectCols ...string) (*User, error) {
+func FindUser(ctx context.Context, exec boil.ContextExecutor, iD int, selectCols ...string) (*User, error) {
 	userObj := &User{}
 
 	sel := "*"
@@ -475,10 +475,10 @@ func FindUser(ctx context.Context, exec boil.ContextExecutor, userID int, select
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from \"user\" where \"user_id\"=$1", sel,
+		"select %s from \"user\" where \"id\"=$1", sel,
 	)
 
-	q := queries.Raw(query, userID)
+	q := queries.Raw(query, iD)
 
 	err := q.Bind(ctx, exec, userObj)
 	if err != nil {
@@ -849,7 +849,7 @@ func (o *User) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, er
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), userPrimaryKeyMapping)
-	sql := "DELETE FROM \"user\" WHERE \"user_id\"=$1"
+	sql := "DELETE FROM \"user\" WHERE \"id\"=$1"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -946,7 +946,7 @@ func (o UserSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (in
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *User) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindUser(ctx, exec, o.UserID)
+	ret, err := FindUser(ctx, exec, o.ID)
 	if err != nil {
 		return err
 	}
@@ -985,16 +985,16 @@ func (o *UserSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) er
 }
 
 // UserExists checks if the User row exists.
-func UserExists(ctx context.Context, exec boil.ContextExecutor, userID int) (bool, error) {
+func UserExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from \"user\" where \"user_id\"=$1 limit 1)"
+	sql := "select exists(select 1 from \"user\" where \"id\"=$1 limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, userID)
+		fmt.Fprintln(writer, iD)
 	}
-	row := exec.QueryRowContext(ctx, sql, userID)
+	row := exec.QueryRowContext(ctx, sql, iD)
 
 	err := row.Scan(&exists)
 	if err != nil {

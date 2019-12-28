@@ -149,7 +149,7 @@ func testUsersExists(t *testing.T) {
 		t.Error(err)
 	}
 
-	e, err := UserExists(ctx, tx, o.UserID)
+	e, err := UserExists(ctx, tx, o.ID)
 	if err != nil {
 		t.Errorf("Unable to check if User exists: %s", err)
 	}
@@ -175,7 +175,7 @@ func testUsersFind(t *testing.T) {
 		t.Error(err)
 	}
 
-	userFound, err := FindUser(ctx, tx, o.UserID)
+	userFound, err := FindUser(ctx, tx, o.ID)
 	if err != nil {
 		t.Error(err)
 	}
@@ -568,7 +568,7 @@ func testUsersSelect(t *testing.T) {
 }
 
 var (
-	userDBTypes = map[string]string{`UserID`: `integer`, `Username`: `text`, `Email`: `text`, `PasswordHash`: `bytea`, `CreatedAt`: `timestamp without time zone`, `UpdatedAt`: `timestamp without time zone`, `Active`: `boolean`}
+	userDBTypes = map[string]string{`ID`: `integer`, `Username`: `text`, `Email`: `text`, `PasswordHash`: `bytea`, `CreatedAt`: `timestamp without time zone`, `UpdatedAt`: `timestamp without time zone`, `Active`: `boolean`}
 	_           = bytes.MinRead
 )
 

@@ -8,8 +8,8 @@ import (
 
 var (
 	h HTTP
-	// Helper is a utililty variable that provides helpful methods for routing
-	Helper ErrorHandler
+	// helper is a utililty variable that provides helpful methods for routing
+	helper ErrorHandler
 )
 
 // NewRoutes creates all the routes
@@ -19,9 +19,7 @@ func NewRoutes(r chi.Router, a App) {
 		JWT: auth.NewJWT(),
 	}
 
-	Helper = ErrorHandler{Logger: h.Logger}
-
-	r.Mount("/user", h.userMount())
+	helper = ErrorHandler{Logger: h.Logger}
 
 	r.Group(public)
 	r.Group(protected)
@@ -33,15 +31,24 @@ func protected(r chi.Router) {
 	r.Use(jwtauth.Verifier(h.JWT.TokenAuth))
 	r.Use(jwtauth.Authenticator)
 
-	r.Mount("/upload", h.uploadMount())
-	r.Mount("/admin", h.adminMount())
+	r.Get("/user", helper.Wrap(h.userGet))
+
+	r.Get("/upload", helper.Wrap(h.uploadGet))
+	r.Post("/upload", helper.Wrap(h.uploadPost))
+
+	r.Get("/admin", helper.Wrap(h.adminGet))
+
+	r.Get("/logout", helper.Wrap(h.logoutGet))
+	r.Post("/logout", helper.Wrap(h.logoutPost))
 }
 
 // Public renders all public routes
 func public(r chi.Router) {
-	r.Get("/", Helper.Wrap(h.homeHandler))
-	r.Get("/newuser", Helper.Wrap(h.newUser))
+	r.Get("/", helper.Wrap(h.homeHandler))
 
-	r.Mount("/login", h.loginMount())
-	r.Mount("/logout", h.logoutMount())
+	r.Post("/user", helper.Wrap(h.userPost))  // user creation
+	r.Get("/newuser", helper.Wrap(h.newUser)) // user creation
+
+	r.Get("/login", helper.Wrap(h.loginGet))
+	r.Post("/login", helper.Wrap(h.loginPost))
 }
