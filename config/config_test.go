@@ -7,7 +7,7 @@ import (
 func TestInitConfig(t *testing.T) {
 	t.Parallel()
 
-	c, err := NewConfig("fixtures/config.toml")
+	c, err := NewConfig("../fixtures/config.toml")
 
 	if err != nil {
 		t.Error("err should be nil", err)
