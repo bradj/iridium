@@ -2,6 +2,9 @@ package routes
 
 import (
 	"database/sql"
+	"encoding/json"
+	"io"
+	"io/ioutil"
 	"log"
 
 	"github.com/bradj/iridium/auth"
@@ -15,7 +18,6 @@ import (
 // must be safe for access by multiple goroutines.
 type App struct {
 	DB     *sql.DB
-	Logger *log.Logger
 	Config config.TomlConfig
 }
 
@@ -23,8 +25,25 @@ type App struct {
 // a tiny layer that deals with the HTTP protocol, and responding in JSON
 // or whatever. This makes testing very separate.
 type HTTP struct {
-	App // embeds app for easy access
-	JWT auth.JWT
+	App    // embeds app for easy access
+	JWT    auth.JWT
+	Logger *log.Logger
 
 	// Users controllers.Users
+}
+
+func (h HTTP) bodyDecode(body io.ReadCloser, t interface{}) error {
+	buf, err := ioutil.ReadAll(body)
+
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(buf, &t)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
