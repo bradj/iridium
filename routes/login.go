@@ -1,45 +1,50 @@
 package routes
 
 import (
-	"fmt"
-	"html/template"
+	"encoding/json"
 	"net/http"
 
 	"github.com/bradj/iridium/auth"
 	"github.com/bradj/iridium/models"
 )
 
-func (h HTTP) loginGet(w http.ResponseWriter, r *http.Request) error {
-	tmpl, err := template.ParseFiles("templates/login.html")
+type loginRequest struct {
+	Username string
+	Password string
+}
 
-	if err != nil {
-		return err
-	}
-
-	tmpl.Execute(w, nil)
-	return nil
+type loginResponse struct {
+	Token string
 }
 
 func (h HTTP) loginPost(w http.ResponseWriter, r *http.Request) error {
-	username := r.FormValue("username")
-	password := r.FormValue("password")
+	var lr loginRequest
 
-	h.App.Logger.Printf("login request for user '%v'", username)
+	h.bodyDecode(r.Body, &lr)
+
+	h.Logger.Printf("login request for user '%s'", lr.Username)
 
 	user, err := models.Users(
-		models.UserWhere.Username.EQ(username),
+		models.UserWhere.Username.EQ(lr.Username),
 	).One(r.Context(), h.DB)
 
 	if err != nil {
 		return err
 	}
 
-	err = auth.PasswordHashCompare(user.PasswordHash, password)
+	err = auth.PasswordHashCompare(user.PasswordHash, lr.Password)
 
 	if err != nil {
 		return err
 	}
 
-	fmt.Fprintln(w, h.JWT.NewToken(1))
+	buf, err := json.Marshal(loginResponse{Token: h.JWT.NewToken(user.ID)})
+
+	if err != nil {
+		return err
+	}
+
+	w.Write(buf)
+
 	return nil
 }
