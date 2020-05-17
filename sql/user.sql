@@ -1,3 +1,4 @@
+-- +migrate Up
 CREATE TABLE public."user"
 (
     id serial not null,
