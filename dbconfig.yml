@@ -1,0 +1,5 @@
+development:
+  dialect: postgres
+  datasource: host=localhost dbname=iridium user=iridium password=123456789 sslmode=disable
+  dir: sql/
+  table: migrations
