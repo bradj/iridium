@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/bradj/iridium/auth"
@@ -14,7 +13,7 @@ type loginRequest struct {
 }
 
 type loginResponse struct {
-	Token string
+	Error string
 }
 
 func (h HTTP) loginPost(w http.ResponseWriter, r *http.Request) error {
@@ -29,22 +28,22 @@ func (h HTTP) loginPost(w http.ResponseWriter, r *http.Request) error {
 	).One(r.Context(), h.DB)
 
 	if err != nil {
-		return err
+		h.Logger.Printf("Error while retrieving login username %v", err)
+		return ErrBadUser
 	}
 
 	err = auth.PasswordHashCompare(user.PasswordHash, lr.Password)
 
 	if err != nil {
-		return err
+		h.Logger.Printf("Password mismatch %v", err)
+		return ErrIncorrectPassword
 	}
 
-	buf, err := json.Marshal(loginResponse{Token: h.JWT.NewToken(user.ID)})
-
-	if err != nil {
-		return err
-	}
-
-	w.Write(buf)
+	http.SetCookie(w, &http.Cookie{
+		Name:   "jwt",
+		Value:  h.JWT.NewToken(user.ID),
+		Domain: "localhost",
+	})
 
 	return nil
 }
