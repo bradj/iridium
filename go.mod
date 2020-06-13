@@ -18,11 +18,13 @@ require (
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/spf13/viper v1.6.1
+	github.com/spf13/viper v1.6.3
 	github.com/stretchr/testify v1.4.0 // indirect
-	github.com/volatiletech/inflect v0.0.0-20170731032912-e7201282ae8d // indirect
 	github.com/volatiletech/null v8.0.0+incompatible
+	github.com/volatiletech/null/v8 v8.1.0
 	github.com/volatiletech/sqlboiler v3.6.1+incompatible
+	github.com/volatiletech/sqlboiler/v4 v4.1.2
+	github.com/volatiletech/strmangle v0.0.1
 	golang.org/x/crypto v0.0.0-20191219195013-becbf705a915
 	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553 // indirect
 	golang.org/x/sys v0.0.0-20191224085550-c709ea063b76 // indirect

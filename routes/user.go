@@ -8,7 +8,7 @@ import (
 
 	"github.com/bradj/iridium/auth"
 	"github.com/bradj/iridium/models"
-	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 func (h HTTP) newUser(w http.ResponseWriter, r *http.Request) error {
