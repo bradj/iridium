@@ -12,7 +12,7 @@ clean:
 	rm -f ${APP}
 
 test:
-	go test
+	go test ./routes ./auth ./persistence ./config
 
 test-models:
 	go test ./models

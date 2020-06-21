@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -10,6 +11,7 @@ import (
 	"github.com/bradj/iridium/auth"
 	"github.com/bradj/iridium/models"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 func (h HTTP) userGet(w http.ResponseWriter, r *http.Request) error {
@@ -50,10 +52,30 @@ func (h HTTP) userPost(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h HTTP) userGetImages(w http.ResponseWriter, r *http.Request) error {
-	// user := r.Context().Value("User").(*auth.AuthUser)
-	// err := models.Upload(models.UploadWhere.ID.EQ(user.UserId))
+	// TODO : Add pagination
+	claims := auth.GetClaims(r)
 
-	fmt.Fprintln(w, "retrieves user images")
+	h.Logger.Printf("Retrieving images for user %d", claims.UserId)
+
+	uploads, err := models.Uploads(qm.OrderBy(models.UploadColumns.CreatedAt), models.UploadWhere.ID.EQ(claims.UserId)).All(r.Context(), h.DB)
+
+	if err != nil {
+		return err
+	}
+
+	arr := make([]string, len(uploads))
+
+	for ii, u := range uploads {
+		arr[ii] = u.Location
+	}
+
+	enc := json.NewEncoder(w)
+	err = enc.Encode(arr)
+
+	if err != nil {
+		h.Logger.Printf("Could send list of images")
+		return err
+	}
 
 	return nil
 }

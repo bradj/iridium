@@ -1,3 +1,4 @@
+-- +migrate Up
 CREATE TABLE public."upload"
 (
     id serial not null,

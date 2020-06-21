@@ -12,18 +12,18 @@ import (
 
 // Context keys
 var (
-	TokenCtxKey   = &contextKey{"Token"}
-	ClaimCtxKey   = &contextKey{"Claims"}
-	AuthHeaderKey = "IRIDIUM_AUTH"
-	SecretSignKey = []byte("fj98jklsns,nv982nvjkfjdsf903290f3jslk;fj")
+	tokenCtxKey   = &contextKey{"Token"}
+	claimCtxKey   = &contextKey{"Claims"}
+	authHeaderKey = "IRIDIUM_AUTH"
+	secretSignKey = []byte("fj98jklsns,nv982nvjkfjdsf903290f3jslk;fj")
 )
 
 func tokenFromHeader(r *http.Request) string {
-	return r.Header.Get(AuthHeaderKey)
+	return r.Header.Get(authHeaderKey)
 }
 
 func GetClaims(r *http.Request) *IridiumClaims {
-	return r.Context().Value(ClaimCtxKey).(*IridiumClaims)
+	return r.Context().Value(claimCtxKey).(*IridiumClaims)
 }
 
 // Verify the request has a token
@@ -45,7 +45,7 @@ func Verify(next http.Handler) http.Handler {
 				return nil, fmt.Errorf("unexpected signing method")
 			}
 
-			return SecretSignKey, nil
+			return secretSignKey, nil
 		})
 
 		if err != nil {
@@ -53,8 +53,8 @@ func Verify(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx = context.WithValue(ctx, TokenCtxKey, token)
-		ctx = context.WithValue(ctx, ClaimCtxKey, token.Claims.(*IridiumClaims))
+		ctx = context.WithValue(ctx, tokenCtxKey, token)
+		ctx = context.WithValue(ctx, claimCtxKey, token.Claims.(*IridiumClaims))
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -77,7 +77,7 @@ func NewToken(userID int) string {
 	})
 
 	// Sign and get the complete encoded token as a string using the secret
-	tokenString, err := token.SignedString(SecretSignKey)
+	tokenString, err := token.SignedString(secretSignKey)
 
 	if err != nil {
 		return ""

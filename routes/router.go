@@ -30,8 +30,7 @@ func NewRoutes(r chi.Router, a App) {
 // Protected renders all routes requiring auth
 func protected(r chi.Router) {
 	// Seek, verify and validate JWT header token
-	r.Use(auth.Verify)
-	r.Use(auth.Authenticator)
+	r.Use(auth.Verify, auth.Authenticator)
 
 	r.Get("/user", helper.Wrap(h.userGet))
 	r.Get("/user/images", helper.Wrap(h.userGetImages))
