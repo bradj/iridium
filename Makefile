@@ -11,11 +11,17 @@ run:
 clean:
 	rm -f ${APP}
 
+test:
+	go test
+
+test-models:
+	go test ./models
+
 db-start:
 	docker run -itd --rm -p 5432:5432 -e POSTGRES_USER="iridium" -e POSTGRES_PASSWORD="123456789" postgres
 
 db-generate:
-	go generate
+	sqlboiler --wipe psql
 
 db-migrate:
 	sql-migrate up

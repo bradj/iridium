@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/go-chi/jwtauth"
+	"github.com/bradj/iridium/auth"
 )
 
 func (h HTTP) adminGet(w http.ResponseWriter, r *http.Request) error {
-	_, claims, _ := jwtauth.FromContext(r.Context())
+	claims := auth.GetClaims(r)
 
-	fmt.Fprintf(w, "protected area. hi %v", claims["user_id"])
+	fmt.Fprintf(w, "protected area. hi %v", claims.Subject)
 
 	return nil
 }

@@ -20,7 +20,7 @@ const configLocation string = "config.toml"
 
 func init() {
 	// overrides default Chi logger to log in UTC
-	middleware.DefaultLogger = middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: log.New(os.Stdout, "", log.LstdFlags+log.LUTC), NoColor: false})
+	middleware.DefaultLogger = middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: log.New(os.Stdout, "REQ-", log.LstdFlags+log.LUTC), NoColor: false})
 }
 
 func main() {
@@ -59,6 +59,7 @@ func main() {
 
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.Use(middleware.RealIP)
 	r.Use(middleware.RequestID)
 	r.Use(middleware.SetHeader("Content-Type", "application/json"))
 	r.Use(xs.Handler)

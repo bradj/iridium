@@ -4,3 +4,4 @@ iridium
 *.blob
 config.toml
 sqlboiler.toml
+uploaded/

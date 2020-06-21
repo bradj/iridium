@@ -20,7 +20,12 @@ type loginResponse struct {
 func (h HTTP) loginPost(w http.ResponseWriter, r *http.Request) error {
 	var lr loginRequest
 
-	h.bodyDecode(r.Body, &lr)
+	err := h.bodyDecode(r.Body, &lr)
+
+	if err != nil {
+		h.Logger.Printf("Could not decode body: %s", err)
+		return err
+	}
 
 	h.Logger.Printf("login request for user '%s'", lr.Username)
 
@@ -38,7 +43,7 @@ func (h HTTP) loginPost(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	buf, err := json.Marshal(loginResponse{Token: h.JWT.NewToken(user.ID)})
+	buf, err := json.Marshal(loginResponse{Token: auth.NewToken(user.ID)})
 
 	if err != nil {
 		return err

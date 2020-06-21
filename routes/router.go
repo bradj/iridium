@@ -6,7 +6,6 @@ import (
 
 	"github.com/bradj/iridium/auth"
 	"github.com/go-chi/chi"
-	"github.com/go-chi/jwtauth"
 )
 
 var (
@@ -19,8 +18,7 @@ var (
 func NewRoutes(r chi.Router, a App) {
 	h = HTTP{
 		App:    a,
-		JWT:    auth.NewJWT(),
-		Logger: log.New(os.Stdout, "", log.LstdFlags+log.LUTC),
+		Logger: log.New(os.Stdout, "APP-", log.LstdFlags+log.LUTC),
 	}
 
 	helper = ErrorHandler{Logger: h.Logger}
@@ -31,14 +29,13 @@ func NewRoutes(r chi.Router, a App) {
 
 // Protected renders all routes requiring auth
 func protected(r chi.Router) {
-	// Seek, verify and validate JWT tokens
-	r.Use(jwtauth.Verifier(h.JWT.TokenAuth))
-	r.Use(jwtauth.Authenticator)
+	// Seek, verify and validate JWT header token
+	r.Use(auth.Verify)
+	r.Use(auth.Authenticator)
 
 	r.Get("/user", helper.Wrap(h.userGet))
-
-	r.Get("/image", helper.Wrap(h.uploadGet))
-	r.Post("/image", helper.Wrap(h.uploadPost))
+	r.Get("/user/images", helper.Wrap(h.userGetImages))
+	r.Post("/user/images", helper.Wrap(h.userUploadImage))
 
 	r.Get("/admin", helper.Wrap(h.adminGet))
 

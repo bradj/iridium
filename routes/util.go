@@ -2,8 +2,11 @@ package routes
 
 import (
 	"log"
+	"math/rand"
 	"net/http"
 )
+
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 // ErrorHandler is a type that has dependencies
 // for error handling. Like loggers and maybe other
@@ -23,4 +26,14 @@ func (e ErrorHandler) Wrap(fn func(w http.ResponseWriter, r *http.Request) error
 
 		e.Logger.Println("error happened", err)
 	}
+}
+
+func RandString(n int) string {
+	b := make([]byte, n)
+
+	for i := range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+
+	return string(b)
 }
