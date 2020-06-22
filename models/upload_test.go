@@ -673,7 +673,7 @@ func testUploadsSelect(t *testing.T) {
 }
 
 var (
-	uploadDBTypes = map[string]string{`ID`: `integer`, `UserID`: `integer`, `Type`: `enum.upload_type('image','video')`, `Location`: `text`, `CreatedAt`: `timestamp without time zone`, `UpdatedAt`: `timestamp without time zone`}
+	uploadDBTypes = map[string]string{`ID`: `integer`, `UserID`: `uuid`, `Type`: `enum.upload_type('image','video')`, `Location`: `text`, `CreatedAt`: `timestamp without time zone`, `UpdatedAt`: `timestamp without time zone`}
 	_             = bytes.MinRead
 )
 

@@ -8,6 +8,8 @@ import (
 	"github.com/go-chi/chi"
 )
 
+const userCtxKey string = "UserKey"
+
 var (
 	h HTTP
 	// helper is a utililty variable that provides helpful methods for routing
@@ -30,13 +32,18 @@ func NewRoutes(r chi.Router, a App) {
 // Protected renders all routes requiring auth
 func protected(r chi.Router) {
 	// Seek, verify and validate JWT header token
-	r.Use(auth.Verify, auth.Authenticator)
+	r.Use(auth.Verify, auth.Authenticator, PopulateCtx)
 
-	r.Get("/user", helper.Wrap(h.userGet))
-	r.Get("/user/images", helper.Wrap(h.userGetImages))
-	r.Post("/user/images", helper.Wrap(h.userUploadImage))
+	r.Route("/user", func(r chi.Router) {
+		r.Get("/", helper.Wrap(h.userGet))
 
-	r.Get("/admin", helper.Wrap(h.adminGet))
+		r.Get("/images", helper.Wrap(h.userGetImages))
+		r.Post("/images", helper.Wrap(h.userUploadImage))
+	})
+
+	r.Route("/admin", func(r chi.Router) {
+		r.Get("/", helper.Wrap(h.adminGet))
+	})
 
 	r.Post("/logout", helper.Wrap(h.logoutPost))
 }

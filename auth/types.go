@@ -9,6 +9,6 @@ type contextKey struct {
 }
 
 type IridiumClaims struct {
-	UserId int `json:"userid,omitempty"`
+	UserId string `json:"userid,omitempty"`
 	jwt.StandardClaims
 }

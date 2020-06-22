@@ -24,7 +24,7 @@ import (
 
 // User is an object representing the database table.
 type User struct {
-	ID           int       `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ID           string    `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Username     string    `boil:"username" json:"username" toml:"username" yaml:"username"`
 	Email        string    `boil:"email" json:"email" toml:"email" yaml:"email"`
 	PasswordHash []byte    `boil:"password_hash" json:"password_hash" toml:"password_hash" yaml:"password_hash"`
@@ -89,7 +89,7 @@ func (w whereHelpernull_Bool) GTE(x null.Bool) qm.QueryMod {
 }
 
 var UserWhere = struct {
-	ID           whereHelperint
+	ID           whereHelperstring
 	Username     whereHelperstring
 	Email        whereHelperstring
 	PasswordHash whereHelper__byte
@@ -97,7 +97,7 @@ var UserWhere = struct {
 	UpdatedAt    whereHelpernull_Time
 	Active       whereHelpernull_Bool
 }{
-	ID:           whereHelperint{field: "\"user\".\"id\""},
+	ID:           whereHelperstring{field: "\"user\".\"id\""},
 	Username:     whereHelperstring{field: "\"user\".\"username\""},
 	Email:        whereHelperstring{field: "\"user\".\"email\""},
 	PasswordHash: whereHelper__byte{field: "\"user\".\"password_hash\""},
@@ -588,7 +588,7 @@ func Users(mods ...qm.QueryMod) userQuery {
 
 // FindUser retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindUser(ctx context.Context, exec boil.ContextExecutor, iD int, selectCols ...string) (*User, error) {
+func FindUser(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*User, error) {
 	userObj := &User{}
 
 	sel := "*"
@@ -1106,7 +1106,7 @@ func (o *UserSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) er
 }
 
 // UserExists checks if the User row exists.
-func UserExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bool, error) {
+func UserExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"user\" where \"id\"=$1 limit 1)"
 

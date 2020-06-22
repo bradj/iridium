@@ -38,15 +38,7 @@ func Verify(next http.Handler) http.Handler {
 			return
 		}
 
-		token, err := jwt.ParseWithClaims(tokenString, &IridiumClaims{}, func(token *jwt.Token) (interface{}, error) {
-			// Don't forget to validate the alg is what you expect:
-			// TODO : Validate the alg is what I expect
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("unexpected signing method")
-			}
-
-			return secretSignKey, nil
-		})
+		token, err := parseToken(tokenString)
 
 		if err != nil {
 			http.Error(w, http.StatusText(401), 401)
@@ -66,8 +58,26 @@ func Authenticator(next http.Handler) http.Handler {
 	})
 }
 
+func parseToken(tokenString string) (*jwt.Token, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &IridiumClaims{}, func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+		// TODO : Validate the alg is what I expect
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method")
+		}
+
+		return secretSignKey, nil
+	})
+
+	if err != nil {
+
+	}
+
+	return token, nil
+}
+
 // NewToken generates a new JWT
-func NewToken(userID int) string {
+func NewToken(userID string) string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, IridiumClaims{
 		userID,
 		jwt.StandardClaims{

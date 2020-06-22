@@ -1,9 +1,13 @@
 package routes
 
 import (
+	"context"
 	"log"
 	"math/rand"
 	"net/http"
+
+	"github.com/bradj/iridium/auth"
+	"github.com/bradj/iridium/persistence"
 )
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -36,4 +40,22 @@ func RandString(n int) string {
 	}
 
 	return string(b)
+}
+
+func PopulateCtx(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		claims := auth.GetClaims(r)
+
+		user, err := persistence.GetUser(claims.UserId, r.Context(), h.DB)
+
+		if err != nil {
+			h.Logger.Print("Could not poulate context with user", err)
+			http.Error(w, http.StatusText(401), 401)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), userCtxKey, user)
+
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }

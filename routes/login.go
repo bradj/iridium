@@ -40,6 +40,7 @@ func (h HTTP) loginPost(w http.ResponseWriter, r *http.Request) error {
 	err = auth.PasswordHashCompare(user.PasswordHash, lr.Password)
 
 	if err != nil {
+		h.Logger.Printf("Password compare failed %v", err)
 		return err
 	}
 

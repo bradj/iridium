@@ -25,7 +25,7 @@ import (
 // Upload is an object representing the database table.
 type Upload struct {
 	ID        int       `boil:"id" json:"id" toml:"id" yaml:"id"`
-	UserID    int       `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
+	UserID    string    `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	Type      string    `boil:"type" json:"type" toml:"type" yaml:"type"`
 	Location  string    `boil:"location" json:"location" toml:"location" yaml:"location"`
 	CreatedAt null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
@@ -124,14 +124,14 @@ func (w whereHelpernull_Time) GTE(x null.Time) qm.QueryMod {
 
 var UploadWhere = struct {
 	ID        whereHelperint
-	UserID    whereHelperint
+	UserID    whereHelperstring
 	Type      whereHelperstring
 	Location  whereHelperstring
 	CreatedAt whereHelpernull_Time
 	UpdatedAt whereHelpernull_Time
 }{
 	ID:        whereHelperint{field: "\"upload\".\"id\""},
-	UserID:    whereHelperint{field: "\"upload\".\"user_id\""},
+	UserID:    whereHelperstring{field: "\"upload\".\"user_id\""},
 	Type:      whereHelperstring{field: "\"upload\".\"type\""},
 	Location:  whereHelperstring{field: "\"upload\".\"location\""},
 	CreatedAt: whereHelpernull_Time{field: "\"upload\".\"created_at\""},
@@ -613,7 +613,7 @@ func Uploads(mods ...qm.QueryMod) uploadQuery {
 
 // FindUpload retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindUpload(ctx context.Context, exec boil.ContextExecutor, iD int, userID int, selectCols ...string) (*Upload, error) {
+func FindUpload(ctx context.Context, exec boil.ContextExecutor, iD int, userID string, selectCols ...string) (*Upload, error) {
 	uploadObj := &Upload{}
 
 	sel := "*"
@@ -1131,7 +1131,7 @@ func (o *UploadSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) 
 }
 
 // UploadExists checks if the Upload row exists.
-func UploadExists(ctx context.Context, exec boil.ContextExecutor, iD int, userID int) (bool, error) {
+func UploadExists(ctx context.Context, exec boil.ContextExecutor, iD int, userID string) (bool, error) {
 	var exists bool
 	sql := "select exists(select 1 from \"upload\" where \"id\"=$1 AND \"user_id\"=$2 limit 1)"
 

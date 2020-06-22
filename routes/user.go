@@ -55,9 +55,9 @@ func (h HTTP) userGetImages(w http.ResponseWriter, r *http.Request) error {
 	// TODO : Add pagination
 	claims := auth.GetClaims(r)
 
-	h.Logger.Printf("Retrieving images for user %d", claims.UserId)
+	h.Logger.Printf("Retrieving images for user %s", claims.UserId)
 
-	uploads, err := models.Uploads(qm.OrderBy(models.UploadColumns.CreatedAt), models.UploadWhere.ID.EQ(claims.UserId)).All(r.Context(), h.DB)
+	uploads, err := models.Uploads(qm.OrderBy(models.UploadColumns.CreatedAt), models.UploadWhere.UserID.EQ(claims.UserId)).All(r.Context(), h.DB)
 
 	if err != nil {
 		return err
@@ -69,13 +69,14 @@ func (h HTTP) userGetImages(w http.ResponseWriter, r *http.Request) error {
 		arr[ii] = u.Location
 	}
 
-	enc := json.NewEncoder(w)
-	err = enc.Encode(arr)
+	imageLocations, err := json.Marshal(arr)
 
 	if err != nil {
-		h.Logger.Printf("Could send list of images")
+		h.Logger.Printf("Could not send list of images")
 		return err
 	}
+
+	w.Write(imageLocations)
 
 	return nil
 }
@@ -120,7 +121,7 @@ func (h HTTP) userUploadImage(w http.ResponseWriter, r *http.Request) error {
 	upload.Location = fileLocation
 	upload.Type = models.UploadTypeImage
 
-	h.Logger.Printf("Creating upload for user %d", upload.UserID)
+	h.Logger.Printf("Creating upload for user %s", upload.UserID)
 
 	err = upload.Insert(r.Context(), h.DB, boil.Infer())
 

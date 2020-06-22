@@ -26,8 +26,6 @@ type App struct {
 type HTTP struct {
 	App    // embeds app for easy access
 	Logger *log.Logger
-
-	// Users controllers.Users
 }
 
 func (h HTTP) bodyDecode(body io.ReadCloser, t interface{}) error {
