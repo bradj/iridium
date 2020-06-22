@@ -3,29 +3,31 @@ package persistence
 import (
 	"context"
 	"database/sql"
+	"sync"
 
 	"github.com/bradj/iridium/models"
 )
 
-var (
-	activeUsers map[string]*models.User
-)
+var activeUsers = struct {
+	sync.RWMutex
+	m map[string]*models.User
+}{m: make(map[string]*models.User)}
 
 func GetUser(userID string, ctx context.Context, db *sql.DB) (*models.User, error) {
-	if activeUsers == nil {
-		activeUsers = make(map[string]*models.User)
-	}
-
 	var (
 		user *models.User
 		err  error
 	)
 
-	user, ok := activeUsers[userID]
+	activeUsers.RLock()
+	user, ok := activeUsers.m[userID]
+	activeUsers.RUnlock()
 
 	if ok == false {
 		user, err = models.Users(models.UserWhere.ID.EQ(userID)).One(ctx, db)
-		activeUsers[userID] = user
+		activeUsers.Lock()
+		activeUsers.m[userID] = user
+		activeUsers.Unlock()
 	}
 
 	if err != nil {
@@ -36,5 +38,7 @@ func GetUser(userID string, ctx context.Context, db *sql.DB) (*models.User, erro
 }
 
 func PurgeUser(userID string) {
-	delete(activeUsers, userID)
+	activeUsers.Lock()
+	delete(activeUsers.m, userID)
+	activeUsers.Unlock()
 }
