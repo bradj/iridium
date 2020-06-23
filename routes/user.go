@@ -10,12 +10,15 @@ import (
 
 	"github.com/bradj/iridium/auth"
 	"github.com/bradj/iridium/models"
+	"github.com/go-chi/chi"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 func (h HTTP) userGet(w http.ResponseWriter, r *http.Request) error {
-	fmt.Fprintln(w, "user get")
+	username := chi.URLParam(r, "username")
+
+	fmt.Fprintln(w, fmt.Sprintf("user get %s", username))
 
 	return nil
 }
@@ -54,10 +57,18 @@ func (h HTTP) userPost(w http.ResponseWriter, r *http.Request) error {
 func (h HTTP) userGetImages(w http.ResponseWriter, r *http.Request) error {
 	// TODO : Add pagination
 	claims := auth.GetClaims(r)
+	user := getTargetUser(r)
 
-	h.Logger.Printf("Retrieving images for user %s", claims.UserId)
+	if user == nil {
+		return errors.New("Could not retrieve target user")
+	}
 
-	uploads, err := models.Uploads(qm.OrderBy(models.UploadColumns.CreatedAt), models.UploadWhere.UserID.EQ(claims.UserId)).All(r.Context(), h.DB)
+	h.Logger.Printf("Retrieving images for user %s", user.Username)
+
+	uploads, err := models.Uploads(
+		qm.OrderBy(models.UploadColumns.CreatedAt),
+		qm.InnerJoin("users u on u.id = uploads.user_id"),
+		models.UploadWhere.UserID.EQ(claims.UserId)).All(r.Context(), h.DB)
 
 	if err != nil {
 		return err

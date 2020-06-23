@@ -3,7 +3,9 @@ package auth
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -16,6 +18,7 @@ var (
 	claimCtxKey   = &contextKey{"Claims"}
 	authHeaderKey = "IRIDIUM_AUTH"
 	secretSignKey = []byte("fj98jklsns,nv982nvjkfjdsf903290f3jslk;fj")
+	Logger        = log.New(os.Stdout, "AUTH-", log.LstdFlags+log.LUTC)
 )
 
 func tokenFromHeader(r *http.Request) string {
@@ -70,7 +73,8 @@ func parseToken(tokenString string) (*jwt.Token, error) {
 	})
 
 	if err != nil {
-
+		Logger.Printf("Could not parse token %s", err)
+		return nil, err
 	}
 
 	return token, nil

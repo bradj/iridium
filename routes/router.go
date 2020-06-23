@@ -8,7 +8,8 @@ import (
 	"github.com/go-chi/chi"
 )
 
-const userCtxKey string = "UserKey"
+const userCtxKey string = "CurrentUserKey"
+const targetUserCtxKey string = "TargetUserKey"
 
 var (
 	h HTTP
@@ -34,11 +35,14 @@ func protected(r chi.Router) {
 	// Seek, verify and validate JWT header token
 	r.Use(auth.Verify, auth.Authenticator, PopulateCtx)
 
-	r.Route("/user", func(r chi.Router) {
+	r.Route("/user/{username}", func(r chi.Router) {
+		r.Use(PopulateTargetUser)
+
 		r.Get("/", helper.Wrap(h.userGet))
 
 		r.Get("/images", helper.Wrap(h.userGetImages))
 		r.Post("/images", helper.Wrap(h.userUploadImage))
+
 	})
 
 	r.Route("/admin", func(r chi.Router) {
@@ -50,6 +54,6 @@ func protected(r chi.Router) {
 
 // Public endpoints
 func public(r chi.Router) {
-	r.Post("/user", helper.Wrap(h.userPost)) // user creation
+	r.Post("/users", helper.Wrap(h.userPost)) // user creation
 	r.Post("/login", helper.Wrap(h.loginPost))
 }

@@ -130,12 +130,12 @@ var UploadWhere = struct {
 	CreatedAt whereHelpernull_Time
 	UpdatedAt whereHelpernull_Time
 }{
-	ID:        whereHelperint{field: "\"upload\".\"id\""},
-	UserID:    whereHelperstring{field: "\"upload\".\"user_id\""},
-	Type:      whereHelperstring{field: "\"upload\".\"type\""},
-	Location:  whereHelperstring{field: "\"upload\".\"location\""},
-	CreatedAt: whereHelpernull_Time{field: "\"upload\".\"created_at\""},
-	UpdatedAt: whereHelpernull_Time{field: "\"upload\".\"updated_at\""},
+	ID:        whereHelperint{field: "\"uploads\".\"id\""},
+	UserID:    whereHelperstring{field: "\"uploads\".\"user_id\""},
+	Type:      whereHelperstring{field: "\"uploads\".\"type\""},
+	Location:  whereHelperstring{field: "\"uploads\".\"location\""},
+	CreatedAt: whereHelpernull_Time{field: "\"uploads\".\"created_at\""},
+	UpdatedAt: whereHelpernull_Time{field: "\"uploads\".\"updated_at\""},
 }
 
 // UploadRels is where relationship names are stored.
@@ -379,7 +379,7 @@ func (q uploadQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Uploa
 		if errors.Cause(err) == sql.ErrNoRows {
 			return nil, sql.ErrNoRows
 		}
-		return nil, errors.Wrap(err, "models: failed to execute a one query for upload")
+		return nil, errors.Wrap(err, "models: failed to execute a one query for uploads")
 	}
 
 	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
@@ -418,7 +418,7 @@ func (q uploadQuery) Count(ctx context.Context, exec boil.ContextExecutor) (int6
 
 	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: failed to count upload rows")
+		return 0, errors.Wrap(err, "models: failed to count uploads rows")
 	}
 
 	return count, nil
@@ -434,7 +434,7 @@ func (q uploadQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (boo
 
 	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
 	if err != nil {
-		return false, errors.Wrap(err, "models: failed to check if upload exists")
+		return false, errors.Wrap(err, "models: failed to check if uploads exists")
 	}
 
 	return count > 0, nil
@@ -449,7 +449,7 @@ func (o *Upload) User(mods ...qm.QueryMod) userQuery {
 	queryMods = append(queryMods, mods...)
 
 	query := Users(queryMods...)
-	queries.SetFrom(query.Query, "\"user\"")
+	queries.SetFrom(query.Query, "\"users\"")
 
 	return query
 }
@@ -496,8 +496,8 @@ func (uploadL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular bo
 	}
 
 	query := NewQuery(
-		qm.From(`user`),
-		qm.WhereIn(`user.id in ?`, args...),
+		qm.From(`users`),
+		qm.WhereIn(`users.id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -514,10 +514,10 @@ func (uploadL) LoadUser(ctx context.Context, e boil.ContextExecutor, singular bo
 	}
 
 	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results of eager load for user")
+		return errors.Wrap(err, "failed to close results of eager load for users")
 	}
 	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for user")
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
 	}
 
 	if len(uploadAfterSelectHooks) != 0 {
@@ -570,7 +570,7 @@ func (o *Upload) SetUser(ctx context.Context, exec boil.ContextExecutor, insert 
 	}
 
 	updateQuery := fmt.Sprintf(
-		"UPDATE \"upload\" SET %s WHERE %s",
+		"UPDATE \"uploads\" SET %s WHERE %s",
 		strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 		strmangle.WhereClause("\"", "\"", 2, uploadPrimaryKeyColumns),
 	)
@@ -607,7 +607,7 @@ func (o *Upload) SetUser(ctx context.Context, exec boil.ContextExecutor, insert 
 
 // Uploads retrieves all the records using an executor.
 func Uploads(mods ...qm.QueryMod) uploadQuery {
-	mods = append(mods, qm.From("\"upload\""))
+	mods = append(mods, qm.From("\"uploads\""))
 	return uploadQuery{NewQuery(mods...)}
 }
 
@@ -621,7 +621,7 @@ func FindUpload(ctx context.Context, exec boil.ContextExecutor, iD int, userID s
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from \"upload\" where \"id\"=$1 AND \"user_id\"=$2", sel,
+		"select %s from \"uploads\" where \"id\"=$1 AND \"user_id\"=$2", sel,
 	)
 
 	q := queries.Raw(query, iD, userID)
@@ -631,7 +631,7 @@ func FindUpload(ctx context.Context, exec boil.ContextExecutor, iD int, userID s
 		if errors.Cause(err) == sql.ErrNoRows {
 			return nil, sql.ErrNoRows
 		}
-		return nil, errors.Wrap(err, "models: unable to select from upload")
+		return nil, errors.Wrap(err, "models: unable to select from uploads")
 	}
 
 	return uploadObj, nil
@@ -641,7 +641,7 @@ func FindUpload(ctx context.Context, exec boil.ContextExecutor, iD int, userID s
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
 func (o *Upload) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
 	if o == nil {
-		return errors.New("models: no upload provided for insertion")
+		return errors.New("models: no uploads provided for insertion")
 	}
 
 	var err error
@@ -684,9 +684,9 @@ func (o *Upload) Insert(ctx context.Context, exec boil.ContextExecutor, columns 
 			return err
 		}
 		if len(wl) != 0 {
-			cache.query = fmt.Sprintf("INSERT INTO \"upload\" (\"%s\") %%sVALUES (%s)%%s", strings.Join(wl, "\",\""), strmangle.Placeholders(dialect.UseIndexPlaceholders, len(wl), 1, 1))
+			cache.query = fmt.Sprintf("INSERT INTO \"uploads\" (\"%s\") %%sVALUES (%s)%%s", strings.Join(wl, "\",\""), strmangle.Placeholders(dialect.UseIndexPlaceholders, len(wl), 1, 1))
 		} else {
-			cache.query = "INSERT INTO \"upload\" %sDEFAULT VALUES%s"
+			cache.query = "INSERT INTO \"uploads\" %sDEFAULT VALUES%s"
 		}
 
 		var queryOutput, queryReturning string
@@ -714,7 +714,7 @@ func (o *Upload) Insert(ctx context.Context, exec boil.ContextExecutor, columns 
 	}
 
 	if err != nil {
-		return errors.Wrap(err, "models: unable to insert into upload")
+		return errors.Wrap(err, "models: unable to insert into uploads")
 	}
 
 	if !cached {
@@ -755,10 +755,10 @@ func (o *Upload) Update(ctx context.Context, exec boil.ContextExecutor, columns 
 			wl = strmangle.SetComplement(wl, []string{"created_at"})
 		}
 		if len(wl) == 0 {
-			return 0, errors.New("models: unable to update upload, could not build whitelist")
+			return 0, errors.New("models: unable to update uploads, could not build whitelist")
 		}
 
-		cache.query = fmt.Sprintf("UPDATE \"upload\" SET %s WHERE %s",
+		cache.query = fmt.Sprintf("UPDATE \"uploads\" SET %s WHERE %s",
 			strmangle.SetParamNames("\"", "\"", 1, wl),
 			strmangle.WhereClause("\"", "\"", len(wl)+1, uploadPrimaryKeyColumns),
 		)
@@ -778,12 +778,12 @@ func (o *Upload) Update(ctx context.Context, exec boil.ContextExecutor, columns 
 	var result sql.Result
 	result, err = exec.ExecContext(ctx, cache.query, values...)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to update upload row")
+		return 0, errors.Wrap(err, "models: unable to update uploads row")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "models: failed to get rows affected by update for upload")
+		return 0, errors.Wrap(err, "models: failed to get rows affected by update for uploads")
 	}
 
 	if !cached {
@@ -801,12 +801,12 @@ func (q uploadQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor, c
 
 	result, err := q.Query.ExecContext(ctx, exec)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to update all for upload")
+		return 0, errors.Wrap(err, "models: unable to update all for uploads")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to retrieve rows affected for upload")
+		return 0, errors.Wrap(err, "models: unable to retrieve rows affected for uploads")
 	}
 
 	return rowsAff, nil
@@ -839,7 +839,7 @@ func (o UploadSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, c
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := fmt.Sprintf("UPDATE \"upload\" SET %s WHERE %s",
+	sql := fmt.Sprintf("UPDATE \"uploads\" SET %s WHERE %s",
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, uploadPrimaryKeyColumns, len(o)))
 
@@ -864,7 +864,7 @@ func (o UploadSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, c
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
 func (o *Upload) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
-		return errors.New("models: no upload provided for upsert")
+		return errors.New("models: no uploads provided for upsert")
 	}
 	if !boil.TimestampsAreSkipped(ctx) {
 		currTime := time.Now().In(boil.GetLocation())
@@ -928,7 +928,7 @@ func (o *Upload) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOn
 		)
 
 		if updateOnConflict && len(update) == 0 {
-			return errors.New("models: unable to upsert upload, could not build update column list")
+			return errors.New("models: unable to upsert uploads, could not build update column list")
 		}
 
 		conflict := conflictColumns
@@ -936,7 +936,7 @@ func (o *Upload) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOn
 			conflict = make([]string, len(uploadPrimaryKeyColumns))
 			copy(conflict, uploadPrimaryKeyColumns)
 		}
-		cache.query = buildUpsertQueryPostgres(dialect, "\"upload\"", updateOnConflict, ret, update, conflict, insert)
+		cache.query = buildUpsertQueryPostgres(dialect, "\"uploads\"", updateOnConflict, ret, update, conflict, insert)
 
 		cache.valueMapping, err = queries.BindMapping(uploadType, uploadMapping, insert)
 		if err != nil {
@@ -971,7 +971,7 @@ func (o *Upload) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOn
 		_, err = exec.ExecContext(ctx, cache.query, vals...)
 	}
 	if err != nil {
-		return errors.Wrap(err, "models: unable to upsert upload")
+		return errors.Wrap(err, "models: unable to upsert uploads")
 	}
 
 	if !cached {
@@ -995,7 +995,7 @@ func (o *Upload) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, 
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), uploadPrimaryKeyMapping)
-	sql := "DELETE FROM \"upload\" WHERE \"id\"=$1 AND \"user_id\"=$2"
+	sql := "DELETE FROM \"uploads\" WHERE \"id\"=$1 AND \"user_id\"=$2"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1004,12 +1004,12 @@ func (o *Upload) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, 
 	}
 	result, err := exec.ExecContext(ctx, sql, args...)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to delete from upload")
+		return 0, errors.Wrap(err, "models: unable to delete from uploads")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for upload")
+		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for uploads")
 	}
 
 	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
@@ -1029,12 +1029,12 @@ func (q uploadQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (
 
 	result, err := q.Query.ExecContext(ctx, exec)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to delete all from upload")
+		return 0, errors.Wrap(err, "models: unable to delete all from uploads")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for upload")
+		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for uploads")
 	}
 
 	return rowsAff, nil
@@ -1060,7 +1060,7 @@ func (o UploadSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := "DELETE FROM \"upload\" WHERE " +
+	sql := "DELETE FROM \"uploads\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, uploadPrimaryKeyColumns, len(o))
 
 	if boil.IsDebug(ctx) {
@@ -1075,7 +1075,7 @@ func (o UploadSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor) (
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for upload")
+		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for uploads")
 	}
 
 	if len(uploadAfterDeleteHooks) != 0 {
@@ -1115,7 +1115,7 @@ func (o *UploadSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) 
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := "SELECT \"upload\".* FROM \"upload\" WHERE " +
+	sql := "SELECT \"uploads\".* FROM \"uploads\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, uploadPrimaryKeyColumns, len(*o))
 
 	q := queries.Raw(sql, args...)
@@ -1133,7 +1133,7 @@ func (o *UploadSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) 
 // UploadExists checks if the Upload row exists.
 func UploadExists(ctx context.Context, exec boil.ContextExecutor, iD int, userID string) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from \"upload\" where \"id\"=$1 AND \"user_id\"=$2 limit 1)"
+	sql := "select exists(select 1 from \"uploads\" where \"id\"=$1 AND \"user_id\"=$2 limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1144,7 +1144,7 @@ func UploadExists(ctx context.Context, exec boil.ContextExecutor, iD int, userID
 
 	err := row.Scan(&exists)
 	if err != nil {
-		return false, errors.Wrap(err, "models: unable to check if upload exists")
+		return false, errors.Wrap(err, "models: unable to check if uploads exists")
 	}
 
 	return exists, nil

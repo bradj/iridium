@@ -1,5 +1,5 @@
 -- +migrate Up
-CREATE TABLE public."user"
+CREATE TABLE users
 (
 	id uuid DEFAULT uuid_generate_v4(),
     username text not null check(length(username) >= 3 and length(username) <= 64) UNIQUE,
@@ -14,5 +14,5 @@ CREATE TABLE public."user"
 );
 
 
-ALTER TABLE public."user"
+ALTER TABLE users
     OWNER to iridium;

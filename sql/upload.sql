@@ -1,8 +1,8 @@
 -- +migrate Up
-CREATE TABLE public."upload"
+CREATE TABLE uploads
 (
     id serial not null,
-    user_id int REFERENCES public."user"(id) not null,
+    user_id uuid REFERENCES user(id) not null,
     type upload_type not null,
     location text not null,
     created_at timestamp default now(),
@@ -10,5 +10,5 @@ CREATE TABLE public."upload"
     PRIMARY KEY (id, user_id)
 );
 
-ALTER TABLE public."user"
+ALTER TABLE uploads
     OWNER to iridium;

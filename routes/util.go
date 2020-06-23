@@ -7,7 +7,9 @@ import (
 	"net/http"
 
 	"github.com/bradj/iridium/auth"
+	"github.com/bradj/iridium/models"
 	"github.com/bradj/iridium/persistence"
+	"github.com/go-chi/chi"
 )
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -46,10 +48,10 @@ func PopulateCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		claims := auth.GetClaims(r)
 
-		user, err := persistence.GetUser(claims.UserId, r.Context(), h.DB)
+		user, err := persistence.GetUserById(claims.UserId, r.Context(), h.DB)
 
 		if err != nil {
-			h.Logger.Print("Could not poulate context with user", err)
+			h.Logger.Print("Error retrieving auth'd user", err)
 			http.Error(w, http.StatusText(401), 401)
 			return
 		}
@@ -58,4 +60,26 @@ func PopulateCtx(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+func PopulateTargetUser(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		username := chi.URLParam(r, "username")
+
+		user, err := persistence.GetUserByUsername(username, r.Context(), h.DB)
+
+		if err != nil {
+			h.Logger.Print("Error retrieving target user", err)
+			http.Error(w, http.StatusText(401), 401)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), targetUserCtxKey, user)
+
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func getTargetUser(r *http.Request) *models.User {
+	return r.Context().Value(targetUserCtxKey).(*models.User)
 }
