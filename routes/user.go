@@ -56,7 +56,6 @@ func (h HTTP) userPost(w http.ResponseWriter, r *http.Request) error {
 
 func (h HTTP) userGetImages(w http.ResponseWriter, r *http.Request) error {
 	// TODO : Add pagination
-	claims := auth.GetClaims(r)
 	user := getTargetUser(r)
 
 	if user == nil {
@@ -67,8 +66,7 @@ func (h HTTP) userGetImages(w http.ResponseWriter, r *http.Request) error {
 
 	uploads, err := models.Uploads(
 		qm.OrderBy(models.UploadColumns.CreatedAt),
-		qm.InnerJoin("users u on u.id = uploads.user_id"),
-		models.UploadWhere.UserID.EQ(claims.UserId)).All(r.Context(), h.DB)
+		models.UploadWhere.UserID.EQ(user.ID)).All(r.Context(), h.DB)
 
 	if err != nil {
 		return err
